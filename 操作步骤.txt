@@ -1,0 +1,9 @@
+1. 安装antd UI库   yarn add antd 安装步骤：https://ant.design/docs/react/use-with-create-react-app-cn
+2. 安装接口请求库axios   yarn add axios
+3. 安装echarts   yarn add echarts --save
+
+编码-----
+
+4.componentDidMount中请求repositories接口
+5.componentDidMount中请求用户信息接口
+6.将接口返回的数据显示在界面上
