@@ -3,7 +3,7 @@
  * @Author: ljz
  * @Date: 2021-02-04 10:00:43
  * @LastEditors: ljz
- * @LastEditTime: 2021-03-22 16:32:32
+ * @LastEditTime: 2021-03-22 17:21:03
  */
 import './App.css';
 import { Button, Input, Table, Form } from 'antd';
@@ -206,6 +206,10 @@ class App extends React.Component {
     }
   }
 
+  /**
+   * 格式化echarts需要的数据
+   * @param {*} data 
+   */
   formatPerData(data) {
     let seriesName = new Set()
     data.forEach(item => {
@@ -298,16 +302,16 @@ class App extends React.Component {
    * 判断输入的是不是number类型
    * @param {*} value 
    */
-  validatorNumber(rule, value, callback) {
+  validatorNumber(rule, value) {
     let reg = /^[0-9]+.?[0-9]*$/; //判断字符串是否为数字
     if (value) {
       if (reg.test(value)) {
-        callback()
+        return Promise.resolve()
       } else if (!reg.test(value)) {
-        callback('只能输入数字')
+        return Promise.reject('只能输入数字')
       }
     } else {
-      callback()
+      return Promise.resolve()
     }
   }
 
