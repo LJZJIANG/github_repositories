@@ -1,13 +1,14 @@
 @import '~antd/dist/antd.css';
 
 .App{
-  padding: 50px 20px;
+  background: #FBFAF0;
 }
 
 .title-header{
   display: flex;
   align-items: center;
-  margin-bottom: 40px;
+  background: #fff;
+  padding: 10px 20px;
 }
 
 .title-header img{
@@ -26,12 +27,11 @@
   padding: 10px 20px;
 }
 
+.main{
+  padding: 0 20px 20px;
+}
+
 .statistics-info{
-  background: #FCF3D4;
-  flex-basis: 40%;
-  margin-right: 2%;
-  border-radius: 10px;
-  padding: 20px;
   box-sizing: border-box;
 }
 
@@ -48,12 +48,11 @@
 }
 
 .user-name{
-  color: #314CB1;
   font-size: 18px;
   font-weight: bold;
 }
 
-#repos-echarts{
+#repos-echarts,#repos-commit-top10{
   width: 500px;
   height: 300px;
   margin-right: 2%;
@@ -96,13 +95,20 @@
 .table-container{
   display: flex;
 }
-
-.table{
+.table-container h3{
+  text-align: center;
+  font-size: 20px;
+}
+.table-container>div:first-of-type{
   flex-basis: 68%;
   margin-right: 2%;
 }
 .archive-wrapper{
   flex-basis:30% ;
+  background: #FECA42;
+  border-radius: 10px;
+  padding: 10px 15px;
+  box-sizing: border-box;
 }
 
 .weigth-form{
@@ -117,7 +123,7 @@
 }
 
 .ant-form-item-control-input{
-  width: 80px;
+  width: 100px;
 }
 
 .ant-input{
@@ -125,21 +131,20 @@
 }
 
 .submit-btn{
-  width: 180px;
+  width: 100px;
   text-align: center;
   white-space: normal;
   height: auto;
   color: #fff;
-  background: #ED000B;
-  border: 1px solid #000;
+  background: #1C9731;
   border-radius: 5px;
   font-weight: bold;
   outline: none;
   margin-left: 20px;
+  padding: 10px 0;
 }
 
 .archive-wrapper-table{
-  background: #EAEBEB;
   padding: 10px 20px;
   margin-top: 20px;
 }
@@ -151,7 +156,6 @@
 }
 
 .archive-table-header div{
-  background: #F7D7C2;
   text-align: center;
   padding: 8px 10px;
   font-weight: bold;
@@ -160,7 +164,7 @@
 
 .archive-table-line{
   display: flex;
-  background: #F8C462;
+  background: #FCDD75;
   margin-bottom: 15px;
   align-items: center;
   justify-content: space-between;
@@ -175,4 +179,10 @@
 
 .archive-table-line div:last-of-type{
   flex: 1;
+}
+
+.empty-icon{
+  display: block;
+  margin: 0 auto;
+  width: 100px;
 }

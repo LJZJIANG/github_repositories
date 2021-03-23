@@ -3,7 +3,7 @@
  * @Author: ljz
  * @Date: 2021-02-04 10:00:43
  * @LastEditors: ljz
- * @LastEditTime: 2021-03-22 17:21:03
+ * @LastEditTime: 2021-03-23 17:00:15
  */
 import './App.css';
 import { Button, Input, Table, Form } from 'antd';
@@ -16,9 +16,10 @@ import githubIcon from './assets/imgs/gitHub.png'
 import repositoryIcon from './assets/imgs/repository.png'
 import clockIcon from './assets/imgs/clock.png'
 import emailIcon from './assets/imgs/email.png'
+import emptyIcon from './assets/imgs/empty.png'
 import APIS from './api/api';
-
-
+import { validatorNumber, softmax } from './utils'
+import commitsData from './assets/commits-data'
 
 // 表格列名
 const columns = [
@@ -48,8 +49,8 @@ const columns = [
     key: 'updated_at',
     dataIndex: 'updated_at',
     sorter: (a, b) => {
-      let aTime = new Date(a.created_at).getTime();
-      let bTime = new Date(b.created_at).getTime();
+      let aTime = new Date(a.updated_at).getTime();
+      let bTime = new Date(b.updated_at).getTime();
       return aTime - bTime;
     },
     render: (value) => {
@@ -75,9 +76,9 @@ const columns = [
   },
   {
     title: 'Issues',
-    key: 'size',
-    dataIndex: 'size',
-    sorter: (a, b) => a.size - b.size
+    key: 'open_issues',
+    dataIndex: 'open_issues',
+    sorter: (a, b) => a.open_issues - b.open_issues
   },
   {
     title: 'forks',
@@ -87,9 +88,9 @@ const columns = [
   },
   {
     title: 'commits',
-    key: 'forks_count',
-    dataIndex: 'forks_count',
-    sorter: (a, b) => a.forks_count - b.forks_count
+    key: 'commits',
+    dataIndex: 'commits',
+    sorter: (a, b) => a.commits - b.commits
   },
   {
     title: 'Archived Status',
@@ -97,7 +98,7 @@ const columns = [
     dataIndex: 'archived',
     sorter: (a, b) => a.archived - b.archived,
     render: (value) => {
-      return value.archived ? '是' : '否'
+      return value.archived ? 'YES' : 'NO'
     }
   },
 ]
@@ -109,7 +110,8 @@ class App extends React.Component {
     list: [], // repositories 数据列表
     memberList: [],
     userInfo: {}, // 用户信息
-    currentPage: 1
+    currentPage: 1,
+    archivedList: []
   }
 
   // react生命周期  在里面请求数据
@@ -128,12 +130,15 @@ class App extends React.Component {
         let userInfo = JSON.parse(localStorage.getItem('userInfo'));
         let repositoriesData = JSON.parse(localStorage.getItem('repositoriesData'));
         let memberList = JSON.parse(localStorage.getItem('memberList'));
-        this.formatPerData(repositoriesData)
+        this.formatLanguagePerData(repositoriesData)
+        // 排序并取出前10 的commit数据
+        let commitTop10Arr = repositoriesData.sort((a, b) => b.commits - a.commits).slice(0, 10)
         this.setState({
           userInfo,
           memberList,
           list: repositoriesData
         })
+        this.formatCommitPerData(commitTop10Arr)
       }
     } else {
       this.getRepositoriesData(this.state.currentPage)
@@ -179,9 +184,19 @@ class App extends React.Component {
       if (repositoriesData.length >= 100) {
         this.getRepositoriesData()
       } else {
+        // 处理commits数据
+        list.forEach(item => {
+          if (commitsData[item.name] !== undefined) {
+            item.commits = commitsData[item.name]
+          }
+        })
+
+        // 排序并取出前10 的commit数据
+        let commitTop10Arr = list.sort((a, b) => b.commits - a.commits).slice(0, 10)
         // 缓存repositoriesData数据
         localStorage.setItem('repositoriesData', JSON.stringify(list));
-        this.formatPerData(list)
+        this.formatLanguagePerData(list)
+        this.formatCommitPerData(commitTop10Arr)
       }
     })
 
@@ -207,10 +222,10 @@ class App extends React.Component {
   }
 
   /**
-   * 格式化echarts需要的数据
+   * 格式化echarts  language需要的数据
    * @param {*} data 
    */
-  formatPerData(data) {
+  formatLanguagePerData(data) {
     let seriesName = new Set()
     data.forEach(item => {
       seriesName.add(item.language);
@@ -240,7 +255,7 @@ class App extends React.Component {
     const reposEchartsInit = echarts.init(reposEchartsDom);
     // echarts配置项
     const reposEchartsOptions = {
-      backgroundColor: '#E1D9CA',
+      // backgroundColor: '#E1D9CA',
       title: {
         text: 'Repos per Language',
         x: 'center'
@@ -285,6 +300,68 @@ class App extends React.Component {
     reposEchartsInit.setOption(reposEchartsOptions)
   }
 
+  /**
+ * 格式化echarts  commits top10需要的数据
+ * @param {*} data 
+ */
+  formatCommitPerData(data) {
+    let seriesData = [];
+    data.forEach(item => {
+      seriesData.push({
+        name: item.name,
+        value: item.commits
+      })
+    })
+
+    const reposCommitTop10 = document.getElementById('repos-commit-top10');
+    // 初始化echarts对象
+    const reposCommitInit = echarts.init(reposCommitTop10);
+    let reposCommitsOptions = {
+      title: {
+        text: 'Commits per Repos(top 10)',
+        x: 'center'
+      },
+      tooltip: {
+        trigger: 'item'
+      },
+      legend: {
+        left: 'center',
+        bottom: 0,
+        itemWidth: 14,
+        itemHeight: 8,
+        textStyle: {
+          fontSize: 10
+        }
+      },
+      series: [
+        {
+          name: 'Commits count',
+          type: 'pie',
+          radius: ['40%', '60%'],
+          avoidLabelOverlap: false,
+          label: {
+            show: false,
+            position: 'center'
+          },
+          emphasis: {
+            label: {
+              show: false,
+              fontSize: '40',
+              fontWeight: 'bold'
+            }
+          },
+          labelLine: {
+            show: false
+          },
+          data: seriesData
+        }
+      ]
+    };
+
+    // 设置echarts配置
+    reposCommitInit.setOption(reposCommitsOptions)
+  }
+
   // 点击头像 跳转页面
   handleToavatarGit(url) {
     window.open(url)
@@ -294,105 +371,96 @@ class App extends React.Component {
    * 提交数据
    * @param {} value 
    */
-  handleSubmit(value) {
-    console.log(value);
+  handleSubmit({ time, Issues, Forks }) {
+    let { list } = this.state;
+    let archivedList = softmax(time, Issues, Forks, list);
+    this.setState({ archivedList })
   }
 
-  /**
-   * 判断输入的是不是number类型
-   * @param {*} value 
-   */
-  validatorNumber(rule, value) {
-    let reg = /^[0-9]+.?[0-9]*$/; //判断字符串是否为数字
-    if (value) {
-      if (reg.test(value)) {
-        return Promise.resolve()
-      } else if (!reg.test(value)) {
-        return Promise.reject('只能输入数字')
-      }
-    } else {
-      return Promise.resolve()
-    }
-  }
 
   render() {
-    let { userInfo, memberList, list } = this.state
+    let { userInfo, memberList, list, archivedList } = this.state
     return (
       <div className="App">
         <div className="title-header">
           <img src={userInfo.avatar_url} alt="头像" />
           <div className="title">{userInfo.name}</div>
         </div>
-        <div className="statistics-container">
-          <div className="statistics-info">
-            <div>
-              <h3 className="user-name">{userInfo.login}</h3>
-              <div><img src={githubIcon} alt="github" />{userInfo.public_repos} contributions on github</div>
-              <div><img src={repositoryIcon} alt="repositoryIcon" />{userInfo.public_repos} public repos</div>
-              <div><img src={clockIcon} alt="clockIcon" />Joined Github  {new Date().getFullYear() - new Date(userInfo.created_at).getFullYear()} years ago</div>
-              <div><img className="email-icon" src={emailIcon} alt="emailIcon" />{userInfo.email || 'null'}</div>
-            </div>
-            <div id="contributions-echarts"></div>
-          </div>
-          <div id="repos-echarts"></div>
-          <div className="member-container">
-            <p className="member-title">
-              <span>People</span>
-              <span>{memberList.length}</span>
-            </p>
-            <div className="member-list">{memberList.map(item => (
-              <img className="avatar" key={item.id} src={item.avatar_url} alt="avatar_url" onClick={() => this.handleToavatarGit(item.html_url)} />
-            ))}</div>
-          </div>
-        </div>
-        <div className="table-container">
-          <Table className="table" size="small" rowKey="id" columns={columns} dataSource={list} />
-          <div className="archive-wrapper">
-            <div className="archive-wrapper-header">
-              <h3>设置权重</h3>
-              <Form className="weigth-form"
-                onFinish={this.handleSubmit}>
-                <Form.Item
-                  label="time"
-                  name="time"
-                  colon={false}
-                  rules={[{ validator: this.validatorNumber }]}
-                >
-                  <Input />
-                </Form.Item>
-                <Form.Item
-                  label="Issues"
-                  name="Issues"
-                  colon={false}
-                  rules={[{ validator: this.validatorNumber }]}
-                >
-                  <Input />
-                </Form.Item>
-                <Form.Item
-                  label="stars"
-                  name="stars"
-                  colon={false}
-                  rules={[{ validator: this.validatorNumber }]}
-                >
-                  <Input />
-                </Form.Item>
-                <Button className="submit-btn" htmlType="submit">Archived recommendation</Button>
-              </Form>
-            </div>
-            <div className="archive-wrapper-table">
-              <div className="archive-table-header">
-                <div>Repo Name</div>
-                <div>Confidence</div>
+        <div className="main">
+          <div className="statistics-container">
+            <div className="statistics-info">
+              <div>
+                <h3 className="user-name">{userInfo.login}</h3>
+                <div><img src={githubIcon} alt="github" />{userInfo.public_repos} contributions on github</div>
+                <div><img src={repositoryIcon} alt="repositoryIcon" />{userInfo.public_repos} public repos</div>
+                <div><img src={clockIcon} alt="clockIcon" />Joined Github  {new Date().getFullYear() - new Date(userInfo.created_at).getFullYear()} years ago</div>
+                <div><img className="email-icon" src={emailIcon} alt="emailIcon" />{userInfo.email || 'null'}</div>
               </div>
-              <div className="archive-table-body">
-                <div className="archive-table-line">
+            </div>
+            <div id="repos-commit-top10"></div>
+            <div id="repos-echarts"></div>
+            <div className="member-container">
+              <p className="member-title">
+                <span>People</span>
+              </p>
+              <div className="member-list">{memberList.map(item => (
+                <img className="avatar" key={item.id} src={item.avatar_url} alt="avatar_url" onClick={() => this.handleToavatarGit(item.html_url)} />
+              ))}</div>
+            </div>
+          </div>
+          <div className="table-container">
+            <div>
+              <h3>Repos Information</h3>
+              <Table className="table" size="small" rowKey="id" columns={columns} dataSource={list} />
+            </div>
+            <div className="archive-wrapper">
+              <div className="archive-wrapper-header">
+                <h3>Archived recommendation</h3>
+                <Form className="weigth-form"
+                  onFinish={(value) => this.handleSubmit(value)}>
+                  <Form.Item
+                    label="time Intervel"
+                    name="time"
+                    colon={false}
+                    rules={[{ validator: validatorNumber }]}
+                  >
+                    <Input />
+                  </Form.Item>
+                  <Form.Item
+                    label="Issues"
+                    name="Issues"
+                    colon={false}
+                    rules={[{ validator: validatorNumber }]}
+                  >
+                    <Input />
+                  </Form.Item>
+                  <Form.Item
+                    label="Forks"
+                    name="Forks"
+                    colon={false}
+                    rules={[{ validator: validatorNumber }]}
+                  >
+                    <Input />
+                  </Form.Item>
+                  <Button className="submit-btn" htmlType="submit">GO</Button>
+                </Form>
+              </div>
+              <div className="archive-wrapper-table">
+                <div className="archive-table-header">
                   <div>Repo Name</div>
                   <div>Confidence</div>
                 </div>
-                <div className="archive-table-line">
-                  <div>Repo Name</div>
-                  <div>Confidence</div>
-                </div>
+                {archivedList.length > 0 ?
+                  <div className="archive-table-body">
+                    {archivedList.map(item => (
+                      <div key={item.repoName} className="archive-table-line">
+                        <div>{item.repoName}</div>
+                        <div>{(parseFloat(item.value) * 100).toFixed(2)}%</div>
+                      </div>
+                    ))}
+                  </div> :
+                  <img className="empty-icon" src={emptyIcon} alt="empty" />
+                }
               </div>
             </div>
           </div>
