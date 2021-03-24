@@ -8,4 +8,4 @@
 
 # github repositories 可视化统计
 
-## 在线预览：[https://ljzjiang.github.io/github_repositories/build/index.html]点击
+## 在线预览：[点击这里](https://ljzjiang.github.io/github_repositories/build/index.html) 
