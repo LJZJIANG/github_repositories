@@ -13,4 +13,4 @@
 部署：
 1. 先yarn run build 打包
 2.Git上传代码，把build文件也要上传上去（需要修改gitgnore文件中 build删除）
-3.打开GitHub对应项目，点击 “setting”，选择下方 “GitHub Pages”，source 选择对应的代码分支  点击 save
+3.打开GitHub对应项目，点击 “setting”，选择下方 “GitHub Pages”，source 选择对应的代码分支  点击 save 
