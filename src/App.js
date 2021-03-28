@@ -3,10 +3,10 @@
  * @Author: ljz
  * @Date: 2021-02-04 10:00:43
  * @LastEditors: ljz
- * @LastEditTime: 2021-03-23 17:00:15
+ * @LastEditTime: 2021-03-28 14:45:59
  */
 import './App.css';
-import { Button, Input, Table, Form } from 'antd';
+import { Button, Input, Table, Form, Row, Col } from 'antd';
 import React from 'react';
 import axios from 'axios';
 import moment from 'moment'
@@ -382,68 +382,95 @@ class App extends React.Component {
     let { userInfo, memberList, list, archivedList } = this.state
     return (
       <div className="App">
-        <div className="title-header">
-          <img src={userInfo.avatar_url} alt="头像" />
-          <div className="title">{userInfo.name}</div>
-        </div>
+        <Row className="title-header">
+          {/* 添加栅格系统 */}
+          {/* 文档 https://ant.design/components/grid-cn/ */}
+          {/* xs:屏幕 < 576px 响应式栅格，可为栅格数或一个包含其他属性的对象 */}
+          {/* sm:屏幕 ≥ 576px 响应式栅格，可为栅格数或一个包含其他属性的对象 */}
+          {/* md:屏幕 >= 768px 响应式栅格，可为栅格数或一个包含其他属性的对象 */}
+          {/* lg:屏幕 ≥ 992px 响应式栅格，可为栅格数或一个包含其他属性的对象 */}
+          {/* xl:屏幕 ≥ 1200px 响应式栅格，可为栅格数或一个包含其他属性的对象 */}
+          <Col xs={24} sm={24} md={6} lg={3} xl={3}>
+            <img src={userInfo.avatar_url} alt="头像" /></Col>
+          <Col xs={24} sm={24} md={18} lg={18} xl={18}>
+            <div className="title">{userInfo.name}</div></Col>
+        </Row>
         <div className="main">
-          <div className="statistics-container">
-            <div className="statistics-info">
-              <div>
-                <h3 className="user-name">{userInfo.login}</h3>
-                <div><img src={githubIcon} alt="github" />{userInfo.public_repos} contributions on github</div>
-                <div><img src={repositoryIcon} alt="repositoryIcon" />{userInfo.public_repos} public repos</div>
-                <div><img src={clockIcon} alt="clockIcon" />Joined Github  {new Date().getFullYear() - new Date(userInfo.created_at).getFullYear()} years ago</div>
-                <div><img className="email-icon" src={emailIcon} alt="emailIcon" />{userInfo.email || 'null'}</div>
+          <Row className="statistics-container">
+            <Col xs={24} sm={24} md={10} lg={4} xl={4}>
+              <div className="statistics-info">
+                <div>
+                  <h3 className="user-name">{userInfo.login}</h3>
+                  <div><img src={githubIcon} alt="github" />{userInfo.public_repos} contributions on github</div>
+                  <div><img src={repositoryIcon} alt="repositoryIcon" />{userInfo.public_repos} public repos</div>
+                  <div><img src={clockIcon} alt="clockIcon" />Joined Github  {new Date().getFullYear() - new Date(userInfo.created_at).getFullYear()} years ago</div>
+                  <div><img className="email-icon" src={emailIcon} alt="emailIcon" />{userInfo.email || 'null'}</div>
+                </div>
               </div>
-            </div>
-            <div id="repos-commit-top10"></div>
-            <div id="repos-echarts"></div>
-            <div className="member-container">
-              <p className="member-title">
-                <span>People</span>
-              </p>
-              <div className="member-list">{memberList.map(item => (
-                <img className="avatar" key={item.id} src={item.avatar_url} alt="avatar_url" onClick={() => this.handleToavatarGit(item.html_url)} />
-              ))}</div>
-            </div>
-          </div>
-          <div className="table-container">
-            <div>
+            </Col>
+            <Col xs={24} sm={24} md={14} lg={7} xl={7}>
+              <div id="repos-commit-top10"></div>
+            </Col>
+            <Col xs={24} sm={24} md={14} lg={7} xl={7}>
+              <div id="repos-echarts"></div>
+            </Col>
+            <Col xs={24} sm={24} md={10} lg={5} xl={5} push={1}>
+              <div className="member-container">
+                <p className="member-title">
+                  <span>People</span>
+                </p>
+                <div className="member-list">{memberList.map(item => (
+                  <img className="avatar" key={item.id} src={item.avatar_url} alt="avatar_url" onClick={() => this.handleToavatarGit(item.html_url)} />
+                ))}</div>
+              </div>
+            </Col>
+          </Row>
+          <Row className="table-container">
+            <Col xs={24} sm={24} md={16} lg={16} xl={16}>
               <h3>Repos Information</h3>
               <Table className="table" size="small" rowKey="id" columns={columns} dataSource={list} />
-            </div>
-            <div className="archive-wrapper">
+            </Col>
+            <Col className="archive-wrapper" xs={24} sm={24} md={7} lg={7} xl={7} offset={1}>
               <div className="archive-wrapper-header">
                 <h3>Archived recommendation</h3>
-                <Form className="weigth-form"
-                  onFinish={(value) => this.handleSubmit(value)}>
-                  <Form.Item
-                    label="time Intervel"
-                    name="time"
-                    colon={false}
-                    rules={[{ validator: validatorNumber }]}
-                  >
-                    <Input />
-                  </Form.Item>
-                  <Form.Item
-                    label="Issues"
-                    name="Issues"
-                    colon={false}
-                    rules={[{ validator: validatorNumber }]}
-                  >
-                    <Input />
-                  </Form.Item>
-                  <Form.Item
-                    label="Forks"
-                    name="Forks"
-                    colon={false}
-                    rules={[{ validator: validatorNumber }]}
-                  >
-                    <Input />
-                  </Form.Item>
-                  <Button className="submit-btn" htmlType="submit">GO</Button>
-                </Form>
+                <Row gutter={[8, 16]}>
+                  <Form className="weigth-form"
+                    onFinish={(value) => this.handleSubmit(value)}>
+                    <Col span={6} xs={12} sm={12} md={12} lg={12} xl={6}>
+                      <Form.Item
+                        label="time Intervel"
+                        name="time"
+                        colon={false}
+                        rules={[{ validator: validatorNumber }]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Col>
+                    <Col span={6} xs={12} sm={12} md={12} lg={12} xl={6}>
+                      <Form.Item
+                        label="Issues"
+                        name="Issues"
+                        colon={false}
+                        rules={[{ validator: validatorNumber }]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Col>
+                    <Col span={6} xs={12} sm={12} md={12} lg={12} xl={6}>
+                      <Form.Item
+                        label="Forks"
+                        name="Forks"
+                        colon={false}
+                        rules={[{ validator: validatorNumber }]}
+                      >
+                        <Input />
+                      </Form.Item>
+                    </Col>
+                    <Col span={5} xs={12} sm={12} md={12} lg={12} xl={5}>
+                      <Button className="submit-btn" htmlType="submit">GO</Button>
+                    </Col>
+                  </Form>
+                </Row>
               </div>
               <div className="archive-wrapper-table">
                 <div className="archive-table-header">
@@ -462,10 +489,10 @@ class App extends React.Component {
                   <img className="empty-icon" src={emptyIcon} alt="empty" />
                 }
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+            </Col>
+          </Row>
+        </div >
+      </div >
     );
   }
 }
